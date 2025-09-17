@@ -12,18 +12,18 @@
 
 # Swift source files
 
-\*.swift @911hzh
+*.swift @911hzh
 
 # Configuration files
 
-_.yml @911hzh
-_.yaml @911hzh
-_.json @911hzh
-_.plist @911hzh
+*.yml @911hzh
+*.yaml @911hzh
+*.json @911hzh
+*.plist @911hzh
 
 # Project configuration
 
-_.xcodeproj/_ @911hzh
+*.xcodeproj/** @911hzh
 Package.swift @911hzh
 .swiftlint.yml @911hzh
 
@@ -33,7 +33,7 @@ Package.swift @911hzh
 
 # Documentation
 
-\*.md @911hzh
+*.md @911hzh
 docs/ @911hzh
 
 # Specific directories
