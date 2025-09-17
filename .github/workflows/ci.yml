@@ -58,6 +58,12 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
           xcodebuild -version
 
+          echo "🖥️ 检查当前系统架构信息..."
+          echo "uname -m: $(uname -m)"
+          echo "arch: $(arch)"
+          sysctl -n machdep.cpu.brand_string
+          echo "可用架构: $(lipo -archs /usr/bin/file 2>/dev/null || echo 'N/A')"
+
           echo "📱 检查可用的模拟器设备..."
           # 智能选择可用的模拟器设备
           DEVICES=("iPhone 16" "iPhone 15" "iPhone 14" "iPhone 13")
