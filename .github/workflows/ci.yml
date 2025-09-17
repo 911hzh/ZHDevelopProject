@@ -103,6 +103,7 @@ jobs:
             -target ZHDevelopProjectTests \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
+            -arch arm64 \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             PROVISIONING_PROFILE="" \
@@ -126,6 +127,7 @@ jobs:
             -scheme ZHDevelopProject \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
+            -arch arm64 \
             -only-testing ZHDevelopProjectTests \
             -skip-testing ZHDevelopProjectUITests \
             CODE_SIGNING_REQUIRED=NO \
@@ -138,4 +140,4 @@ jobs:
           echo "✅ 单元测试完成！"
 
 # 本地单独测试test 的脚本
-# xcodebuild test -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -only-testing ZHDevelopProjectTests -skip-testing ZHDevelopProjectUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
+# xcodebuild test -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -arch arm64 -only-testing ZHDevelopProjectTests -skip-testing ZHDevelopProjectUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
