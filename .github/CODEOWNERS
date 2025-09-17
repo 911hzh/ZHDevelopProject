@@ -12,7 +12,7 @@
 
 # Swift source files
 
-\*.swift @911hzh
+*.swift @911hzh
 
 # Configuration files
 
@@ -33,7 +33,7 @@ Package.swift @911hzh
 
 # Documentation
 
-\*.md @911hzh
+*.md @911hzh
 docs/ @911hzh
 
 
