@@ -1,0 +1,21 @@
+# SwiftLint configuration file
+
+# 包含的目录
+included:
+  - ZHDevelopProject/
+  - ZHDevelopProjectTests/
+  - ZHDevelopProjectUITests/
+
+# 排除的目录和文件
+excluded:
+  - ZHDevelopProject.xcodeproj/
+  - ZHDevelopProject/Assets.xcassets/
+  - ZHDevelopProject/Base.lproj/
+  - ZHDevelopProjectTests/
+
+# 只保留强制解包检查规则
+only_rules:
+  - force_unwrapping
+
+# 自定义配置
+reporter: "xcode" # xcode, json, csv, checkstyle, junit, html, emoji

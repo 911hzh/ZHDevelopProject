@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main, master]
+  pull_request:
+    branches: [develop, main, master]
+
+env:
+  XCODE_VERSION: "16.4"
+  IOS_DEPLOYMENT_TARGET: "15.6"
+
+jobs:
+  # 防止直接推送到保护分支
+  prevent-direct-push:
+    name: Prevent Direct Push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Block direct push to protected branch
+        run: |
+          echo "❌ 直接推送到保护分支被禁止!"
+          echo "请使用Pull Request进行代码合并"
+          echo "推送的分支: ${{ github.ref }}"
+          echo "触发事件: ${{ github.event_name }}"
+          exit 1
+
+  swiftlint:
+    name: SwiftLint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint --reporter github-actions-logging --strict
+
+  build-and-test:
+    name: Build
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      # 暂时禁用缓存以避免UI测试干扰
+      # - name: Cache Xcode derived data
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/Library/Developer/Xcode/DerivedData
+      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('**/ZHKLine.xcodeproj/project.pbxproj') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-xcode-derived-data-
+
+      - name: Setup Xcode and Environment
+        run: |
+          echo "🔧 设置 Xcode 环境..."
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+          xcodebuild -version
+
+          echo "📱 检查可用的模拟器设备..."
+          # 智能选择可用的模拟器设备
+          DEVICES=("iPhone 16" "iPhone 15" "iPhone 14" "iPhone 13")
+          SELECTED_DEVICE=""
+
+          for device in "${DEVICES[@]}"; do
+            if xcrun simctl list devices | grep -q "$device"; then
+              SELECTED_DEVICE="$device"
+              echo "✅ 选择设备: $SELECTED_DEVICE"
+              break
+            fi
+          done
+
+          if [ -z "$SELECTED_DEVICE" ]; then
+            echo "❌ 未找到合适的设备，使用默认"
+            SELECTED_DEVICE="iPhone 15"
+          fi
+
+          # 设置环境变量供后续步骤使用
+          echo "SELECTED_DEVICE=$SELECTED_DEVICE" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          echo "🚀 开始构建项目..."
+          echo "📱 使用设备: $SELECTED_DEVICE"
+
+          # 只构建主应用和单元测试目标
+          xcodebuild \
+            -project ZHKLine.xcodeproj \
+            -target ZHKLine \
+            -target ZHKLineTests \
+            -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
+            -configuration Debug \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE="" \
+            DEVELOPMENT_TEAM="" \
+            IPHONEOS_DEPLOYMENT_TARGET=${{ env.IOS_DEPLOYMENT_TARGET }} \
+            build
+
+          echo "✅ 构建成功完成！"
+
+      - name: Run Unit Tests Only
+        run: |
+          echo "🧪 开始运行单元测试（仅单元测试）..."
+          echo "📱 使用设备: $SELECTED_DEVICE"
+
+          # 清理可能的缓存干扰
+          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHKLine-*/Build/Products/Debug-iphonesimulator/*UITests*
+
+          # 使用scheme但只运行单元测试
+          xcodebuild test \
+            -project ZHKLine.xcodeproj \
+            -scheme ZHKLine \
+            -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
+            -configuration Debug \
+            -only-testing ZHKLineTests \
+            -skip-testing ZHKLineUITests \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE="" \
+            DEVELOPMENT_TEAM="" \
+            IPHONEOS_DEPLOYMENT_TARGET=${{ env.IOS_DEPLOYMENT_TARGET }} \
+            -resultBundlePath TestResults.xcresult
+
+          echo "✅ 单元测试完成！"
+
+# 本地单独测试test 的脚本
+# xcodebuild test -project ZHKLine.xcodeproj -scheme ZHKLine -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -only-testing ZHKLineTests -skip-testing ZHKLineUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6

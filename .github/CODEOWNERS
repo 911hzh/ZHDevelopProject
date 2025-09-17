@@ -1,0 +1,48 @@
+# CODEOWNERS file for ZHKLine project
+
+#
+
+# This file defines who should review pull requests for different parts of the codebase.
+
+# When someone opens a pull request, GitHub will automatically request reviews from the code owners.
+
+# Global fallback - all files
+# 所有文件都需要仓库所有者审查
+* @911hzh @hzh137940556
+
+# Swift source files
+
+\*.swift @911hzh
+
+# Configuration files
+
+_.yml @911hzh
+_.yaml @911hzh
+_.json @911hzh
+_.plist @911hzh
+
+# Project configuration
+
+_.xcodeproj/_ @911hzh
+Package.swift @911hzh
+.swiftlint.yml @911hzh
+
+# CI/CD configuration
+
+.github/ @911hzh
+
+# Documentation
+
+\*.md @911hzh
+docs/ @911hzh
+
+# Specific directories
+
+ZHKLine/Class/Model/ @911hzh
+ZHKLine/Class/View/ @911hzh
+ZHKLine/Class/Base/Api/ @911hzh
+
+# Test files
+
+*Tests/ @911hzh
+*Tests.swift @911hzh
