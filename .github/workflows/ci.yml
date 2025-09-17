@@ -48,7 +48,7 @@ jobs:
       #   uses: actions/cache@v4
       #   with:
       #     path: ~/Library/Developer/Xcode/DerivedData
-      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('**/ZHKLine.xcodeproj/project.pbxproj') }}
+      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('**/ZHDevelopProject.xcodeproj/project.pbxproj') }}
       #     restore-keys: |
       #       ${{ runner.os }}-xcode-derived-data-
 
@@ -86,9 +86,9 @@ jobs:
 
           # 只构建主应用和单元测试目标
           xcodebuild \
-            -project ZHKLine.xcodeproj \
-            -target ZHKLine \
-            -target ZHKLineTests \
+            -project ZHDevelopProject.xcodeproj \
+            -target ZHDevelopProject \
+            -target ZHDevelopProjectTests \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
             CODE_SIGNING_REQUIRED=NO \
@@ -106,16 +106,16 @@ jobs:
           echo "📱 使用设备: $SELECTED_DEVICE"
 
           # 清理可能的缓存干扰
-          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHKLine-*/Build/Products/Debug-iphonesimulator/*UITests*
+          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHDevelopProject-*/Build/Products/Debug-iphonesimulator/*UITests*
 
           # 使用scheme但只运行单元测试
           xcodebuild test \
-            -project ZHKLine.xcodeproj \
-            -scheme ZHKLine \
+            -project ZHDevelopProject.xcodeproj \
+            -scheme ZHDevelopProject \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
-            -only-testing ZHKLineTests \
-            -skip-testing ZHKLineUITests \
+            -only-testing ZHDevelopProjectTests \
+            -skip-testing ZHDevelopProjectUITests \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             PROVISIONING_PROFILE="" \
@@ -126,4 +126,4 @@ jobs:
           echo "✅ 单元测试完成！"
 
 # 本地单独测试test 的脚本
-# xcodebuild test -project ZHKLine.xcodeproj -scheme ZHKLine -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -only-testing ZHKLineTests -skip-testing ZHKLineUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
+# xcodebuild test -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -only-testing ZHDevelopProjectTests -skip-testing ZHDevelopProjectUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
