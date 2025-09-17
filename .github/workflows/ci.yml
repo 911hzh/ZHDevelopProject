@@ -79,6 +79,12 @@ jobs:
           # 设置环境变量供后续步骤使用
           echo "SELECTED_DEVICE=$SELECTED_DEVICE" >> $GITHUB_ENV
 
+      - name: Resolve Package Dependencies
+        run: |
+          echo "📦 解析和下载包依赖..."
+          xcodebuild -resolvePackageDependencies -project ZHDevelopProject.xcodeproj
+          echo "✅ 依赖解析完成！"
+
       - name: Build
         run: |
           echo "🚀 开始构建项目..."
