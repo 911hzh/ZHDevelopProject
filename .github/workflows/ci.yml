@@ -88,7 +88,20 @@ jobs:
       - name: Resolve Package Dependencies
         run: |
           echo "📦 解析和下载包依赖..."
-          xcodebuild -resolvePackageDependencies -project ZHDevelopProject.xcodeproj
+          # 清理可能存在的缓存问题
+          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHDevelopProject-*
+
+          # 使用scheme方式解析依赖，确保所有target的依赖都被正确处理
+          xcodebuild -resolvePackageDependencies -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject
+
+          # 验证CrashReporter模块是否正确下载
+          echo "🔍 验证CrashReporter依赖..."
+          find ~/Library/Developer/Xcode/DerivedData -name "*CrashReporter*" -type d 2>/dev/null | head -5 || echo "未找到CrashReporter缓存目录"
+
+          # 尝试预编译以确保模块可用
+          echo "🔨 预编译验证..."
+          xcodebuild -project ZHDevelopProject.xcodeproj -target ZHDevelopProject -configuration Debug -arch arm64 -sdk iphonesimulator clean build-for-testing CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" || echo "预编译过程中可能存在问题，但继续执行..."
+
           echo "✅ 依赖解析完成！"
 
       - name: Build
@@ -96,14 +109,14 @@ jobs:
           echo "🚀 开始构建项目..."
           echo "📱 使用设备: $SELECTED_DEVICE"
 
-          # 只构建主应用和单元测试目标
+          # 使用scheme方式构建，确保所有依赖正确链接
           xcodebuild \
             -project ZHDevelopProject.xcodeproj \
-            -target ZHDevelopProject \
-            -target ZHDevelopProjectTests \
+            -scheme ZHDevelopProject \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
             -arch arm64 \
+            -sdk iphonesimulator \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             PROVISIONING_PROFILE="" \
@@ -128,6 +141,7 @@ jobs:
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
             -arch arm64 \
+            -sdk iphonesimulator \
             -only-testing ZHDevelopProjectTests \
             -skip-testing ZHDevelopProjectUITests \
             CODE_SIGNING_REQUIRED=NO \
