@@ -48,7 +48,7 @@ jobs:
       #   uses: actions/cache@v4
       #   with:
       #     path: ~/Library/Developer/Xcode/DerivedData
-      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('**/ZHKLine.xcodeproj/project.pbxproj') }}
+      #     key: ${{ runner.os }}-xcode-derived-data-${{ hashFiles('**/ZHDevelopProject.xcodeproj/project.pbxproj') }}
       #     restore-keys: |
       #       ${{ runner.os }}-xcode-derived-data-
 
@@ -57,6 +57,12 @@ jobs:
           echo "🔧 设置 Xcode 环境..."
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
           xcodebuild -version
+
+          echo "🖥️ 检查当前系统架构信息..."
+          echo "uname -m: $(uname -m)"
+          echo "arch: $(arch)"
+          sysctl -n machdep.cpu.brand_string
+          echo "可用架构: $(lipo -archs /usr/bin/file 2>/dev/null || echo 'N/A')"
 
           echo "📱 检查可用的模拟器设备..."
           # 智能选择可用的模拟器设备
@@ -79,16 +85,34 @@ jobs:
           # 设置环境变量供后续步骤使用
           echo "SELECTED_DEVICE=$SELECTED_DEVICE" >> $GITHUB_ENV
 
+      - name: Resolve Package Dependencies
+        run: |
+          echo "📦 解析和下载包依赖..."
+          # 清理可能存在的缓存问题
+          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHDevelopProject-*
+
+          # 使用scheme方式解析依赖，确保所有target的依赖都被正确处理
+          xcodebuild -resolvePackageDependencies -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject
+
+          # 验证CrashReporter模块是否正确下载
+          echo "🔍 验证CrashReporter依赖..."
+          find ~/Library/Developer/Xcode/DerivedData -name "*CrashReporter*" -type d 2>/dev/null | head -5 || echo "未找到CrashReporter缓存目录"
+
+          # 尝试预编译以确保模块可用
+          echo "🔨 预编译验证..."
+          xcodebuild -project ZHDevelopProject.xcodeproj -target ZHDevelopProject -configuration Debug -arch arm64 -sdk iphonesimulator clean build-for-testing CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" || echo "预编译过程中可能存在问题，但继续执行..."
+
+          echo "✅ 依赖解析完成！"
+
       - name: Build
         run: |
           echo "🚀 开始构建项目..."
           echo "📱 使用设备: $SELECTED_DEVICE"
 
-          # 只构建主应用和单元测试目标
+          # 使用scheme方式构建，确保所有依赖正确链接
           xcodebuild \
-            -project ZHKLine.xcodeproj \
-            -target ZHKLine \
-            -target ZHKLineTests \
+            -project ZHDevelopProject.xcodeproj \
+            -scheme ZHDevelopProject \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
             CODE_SIGNING_REQUIRED=NO \
@@ -106,16 +130,16 @@ jobs:
           echo "📱 使用设备: $SELECTED_DEVICE"
 
           # 清理可能的缓存干扰
-          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHKLine-*/Build/Products/Debug-iphonesimulator/*UITests*
+          rm -rf ~/Library/Developer/Xcode/DerivedData/ZHDevelopProject-*/Build/Products/Debug-iphonesimulator/*UITests*
 
           # 使用scheme但只运行单元测试
           xcodebuild test \
-            -project ZHKLine.xcodeproj \
-            -scheme ZHKLine \
+            -project ZHDevelopProject.xcodeproj \
+            -scheme ZHDevelopProject \
             -destination "platform=iOS Simulator,name=$SELECTED_DEVICE,OS=latest" \
             -configuration Debug \
-            -only-testing ZHKLineTests \
-            -skip-testing ZHKLineUITests \
+            -only-testing ZHDevelopProjectTests \
+            -skip-testing ZHDevelopProjectUITests \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             PROVISIONING_PROFILE="" \
@@ -126,4 +150,4 @@ jobs:
           echo "✅ 单元测试完成！"
 
 # 本地单独测试test 的脚本
-# xcodebuild test -project ZHKLine.xcodeproj -scheme ZHKLine -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -only-testing ZHKLineTests -skip-testing ZHKLineUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
+# xcodebuild test -project ZHDevelopProject.xcodeproj -scheme ZHDevelopProject -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" -configuration Debug -arch arm64 -only-testing ZHDevelopProjectTests -skip-testing ZHDevelopProjectUITests CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" PROVISIONING_PROFILE="" DEVELOPMENT_TEAM="" IPHONEOS_DEPLOYMENT_TARGET=15.6
