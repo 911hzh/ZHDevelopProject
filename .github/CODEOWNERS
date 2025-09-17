@@ -38,10 +38,6 @@ docs/ @911hzh
 
 # Specific directories
 
-ZHKLine/Class/Model/ @911hzh
-ZHKLine/Class/View/ @911hzh
-ZHKLine/Class/Base/Api/ @911hzh
-
 # Test files
 
 *Tests/ @911hzh
