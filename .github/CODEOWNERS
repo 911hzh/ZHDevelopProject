@@ -12,7 +12,7 @@
 
 # Swift source files
 
-\*.swift @911hzh
+*.swift @911hzh
 
 # Configuration files
 
@@ -33,14 +33,9 @@ Package.swift @911hzh
 
 # Documentation
 
-\*.md @911hzh
+*.md @911hzh
 docs/ @911hzh
 
-# Specific directories
-
-ZHKLine/Class/Model/ @911hzh
-ZHKLine/Class/View/ @911hzh
-ZHKLine/Class/Base/Api/ @911hzh
 
 # Test files
 
